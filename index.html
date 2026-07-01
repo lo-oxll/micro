@@ -5,24 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>نظام المخازن — مطبعة وزارة الداخلية</title>
 <style>
-/* ── DARK THEME (default) ── */
-:root{
-  --bg:#0b1120;--surface:#111827;--surface2:#1a2438;--border:#1e2d45;
-  --accent:#3b82f6;--green:#10b981;--red:#ef4444;--gold:#f59e0b;
-  --text1:#f1f5f9;--text2:#94a3b8;--text3:#475569;
-  --radius:10px;--sidebar:224px;
-  --shadow:0 2px 12px rgba(0,0,0,.4);
-}
-/* ── LIGHT THEME ── */
-html.light{
-  --bg:#f0f4f8;--surface:#ffffff;--surface2:#e8eef5;--border:#d1dce8;
-  --accent:#2563eb;--green:#059669;--red:#dc2626;--gold:#d97706;
-  --text1:#0f172a;--text2:#475569;--text3:#94a3b8;
-  --shadow:0 2px 12px rgba(0,0,0,.10);
-}
-/* ── smooth transition on theme switch ── */
-*{transition:background-color .25s,border-color .25s,color .2s,box-shadow .25s}
-input,select,textarea,button{transition:background-color .25s,border-color .25s,color .2s}
+:root{--bg:#0b1120;--surface:#111827;--surface2:#1a2438;--border:#1e2d45;
+--accent:#3b82f6;--green:#10b981;--red:#ef4444;--gold:#f59e0b;
+--text1:#f1f5f9;--text2:#94a3b8;--text3:#475569;--radius:10px;--sidebar:224px}
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:'Segoe UI',Tahoma,Arial,sans-serif;background:var(--bg);color:var(--text1);direction:rtl;font-size:14px;min-height:100vh}
 input,select,textarea{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);color:var(--text1);padding:8px 12px;font-size:13px;font-family:inherit;outline:none;transition:border-color .2s;width:100%}
@@ -32,7 +17,7 @@ button{cursor:pointer;font-family:inherit}
 .hidden{display:none!important}
 a{color:var(--accent);text-decoration:none}
 /* Login */
-#login-screen{display:flex;align-items:center;justify-content:center;min-height:100vh;background:radial-gradient(ellipse at 50% 30%,var(--surface2) 0%,var(--bg) 70%)}
+#login-screen{display:flex;align-items:center;justify-content:center;min-height:100vh;background:radial-gradient(ellipse at 50% 30%,#0d1f3c 0%,var(--bg) 70%)}
 .login-box{background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:40px;width:380px;text-align:center}
 .login-logo{font-size:44px;margin-bottom:10px}
 .login-title{font-size:20px;font-weight:800;margin-bottom:3px}
@@ -72,7 +57,7 @@ a{color:var(--accent);text-decoration:none}
 .ph-sub{font-size:12px;color:var(--text3);margin-top:3px}
 .ph-actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
 /* Cards */
-.card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:20px;margin-bottom:16px;box-shadow:var(--shadow)}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:20px;margin-bottom:16px}
 .card-title{font-size:12px;font-weight:700;color:var(--text3);margin-bottom:14px;padding-bottom:8px;border-bottom:1px solid var(--border);text-transform:uppercase;letter-spacing:.5px}
 /* Stat grid */
 .stats{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:12px;margin-bottom:16px}
@@ -176,18 +161,7 @@ tr:hover td{background:rgba(255,255,255,.015)}
 <div id="app-shell" style="display:none">
   <nav class="sidebar">
     <div class="sidebar-brand">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
-        <div class="brand-icon" style="margin-bottom:0">🏛</div>
-        <button id="theme-toggle" onclick="toggleTheme()" title="تبديل الوضع" style="
-          background:var(--surface2);border:1px solid var(--border);border-radius:20px;
-          width:44px;height:24px;cursor:pointer;position:relative;padding:0;
-          transition:background .3s,border-color .3s;flex-shrink:0">
-          <span id="theme-knob" style="
-            position:absolute;top:3px;right:3px;width:16px;height:16px;border-radius:50%;
-            background:var(--accent);transition:transform .3s,background .3s;
-            display:flex;align-items:center;justify-content:center;font-size:10px">🌙</span>
-        </button>
-      </div>
+      <div class="brand-icon">🏛</div>
       <div class="brand-name">نظام المخازن</div>
       <div class="brand-sub">مطبعة وزارة الداخلية</div>
     </div>
@@ -608,13 +582,40 @@ onAuthStateChanged(auth, u => {
 });
 
 W.doLogin = async () => {
-  const e=gv('l-email'), p=gv('l-pass');
-  const btn=document.getElementById('l-btn'), err=document.getElementById('l-err');
-  err.textContent=''; btn.textContent='...'; btn.disabled=true;
-  try { await signInWithEmailAndPassword(auth,e,p); }
-  catch(ex){ err.textContent='بيانات الدخول غير صحيحة'; btn.textContent='دخول'; btn.disabled=false; }
+  const e   = document.getElementById('l-email')?.value?.trim();
+  const p   = document.getElementById('l-pass')?.value;
+  const btn = document.getElementById('l-btn');
+  const err = document.getElementById('l-err');
+
+  if (!e || !p) { err.textContent = 'أدخل البريد الإلكتروني وكلمة المرور'; return; }
+
+  err.textContent = '';
+  btn.textContent = '⏳ جارٍ الدخول...';
+  btn.disabled    = true;
+
+  try {
+    await signInWithEmailAndPassword(auth, e, p);
+    // onAuthStateChanged سيتولى الباقي
+  } catch(ex) {
+    console.error('Login error:', ex.code, ex.message);
+    const msgs = {
+      'auth/invalid-email':       'البريد الإلكتروني غير صحيح',
+      'auth/user-not-found':      'لا يوجد مستخدم بهذا البريد',
+      'auth/wrong-password':      'كلمة المرور غير صحيحة',
+      'auth/invalid-credential':  'البريد أو كلمة المرور غير صحيحة',
+      'auth/too-many-requests':   'محاولات كثيرة — انتظر قليلاً ثم أعد المحاولة',
+      'auth/network-request-failed': 'تحقق من الاتصال بالإنترنت',
+      'auth/configuration-not-found': 'Authentication غير مفعّل في Firebase — فعّل Email/Password',
+    };
+    err.textContent = msgs[ex.code] || `خطأ: ${ex.code}`;
+    btn.textContent = 'دخول';
+    btn.disabled    = false;
+  }
 };
-W.doLogout = async () => { await addAudit('LOGOUT',{detail:'خروج: '+(ME?.email||'')}); await signOut(auth); };
+W.doLogout = async () => {
+  await addAudit('LOGOUT', { detail:'خروج: '+(ME?.email||'') });
+  await signOut(auth);
+};
 
 // ═══════════════════════════════════════════════════════════
 //  LOAD ALL DATA
@@ -773,14 +774,13 @@ W.saveDoc = async type => {
     const ref=await addDoc(collection(db,type==='receive'?C.rec:C.iss),data);
     const obj={id:ref.id,...data};
     type==='receive'?REC.unshift(obj):ISS.unshift(obj);
+    await addAudit('CREATE',{docType:type==='receive'?'استلام':'إصدار',docnum,wh,
+      detail:`${items.length} مادة`+(type==='receive'?` — وصل: ${pnum}`:` — جهة: ${rname}`),
+      value:grandTotal});
+    if(type==='receive') await syncCat(items,wh);
     clearF(p); renderRec(); renderIss(); updateDash();
     st('b-rec',REC.length); st('b-iss',ISS.length);
     toast('✅ تم الحفظ بنجاح','s');
-    // ── العمليات الثانوية (السجل + مزامنة الكتالوج) تعمل بالخلفية دون تعطيل الواجهة ──
-    addAudit('CREATE',{docType:type==='receive'?'استلام':'إصدار',docnum,wh,
-      detail:`${items.length} مادة`+(type==='receive'?` — وصل: ${pnum}`:` — جهة: ${rname}`),
-      value:grandTotal});
-    if(type==='receive') syncCat(items,wh);
   }catch(ex){toast('❌ '+ex.message,'e');}
 };
 
@@ -792,12 +792,12 @@ W.delDoc = async (type,id,docnum) => {
   const col=type==='receive'?C.rec:C.iss;
   try{
     await fbDeleteDoc(doc(db,col,id));
+    await addAudit('DELETE',{docType:type==='receive'?'استلام':'إصدار',docnum,detail:'حذف مستند'});
     if(type==='receive') REC=REC.filter(d=>d.id!==id);
     else ISS=ISS.filter(d=>d.id!==id);
     renderRec(); renderIss(); updateDash();
     st('b-rec',REC.length); st('b-iss',ISS.length);
     toast('🗑 تم الحذف','i');
-    addAudit('DELETE',{docType:type==='receive'?'استلام':'إصدار',docnum,detail:'حذف مستند'});
   }catch(ex){toast('❌ '+ex.message,'e');}
 };
 
@@ -1030,8 +1030,7 @@ async function syncCat(items,wh) {
       CAT.push({id:ref.id,storeNum:it.storeNum||'',name:it.name,unit:it.unit||'',warehouse:code,minQty:0,source:'استلام'});
       n++;
     } else if(!ex.storeNum&&it.storeNum){
-      batch.update(doc(db,C.cat,ex.id),{storeNum:it.storeNum}); ex.storeNum=it.storeNum;
-      n++;
+      await updateDoc(doc(db,C.cat,ex.id),{storeNum:it.storeNum}); ex.storeNum=it.storeNum;
     }
   }
   if(n) await batch.commit();
@@ -1198,96 +1197,46 @@ W.applyRo=()=>{
 };
 
 function buildWhGrid(){
-  const grid=document.getElementById('ro-wh-grid');
-  // Build cards with data attributes — no inline onchange that breaks on re-render
-  grid.innerHTML=WH_LIST.map(w=>{
+  document.getElementById('ro-wh-grid').innerHTML=WH_LIST.map(w=>{
     const rows=roData[w.code]||[];
-    return `<div data-wh-code="${w.code}" style="border:1px solid ${rows.length?'var(--green)':'var(--border)'};border-radius:12px;padding:14px">
+    return `<div style="border:1px solid ${rows.length?'var(--green)':'var(--border)'};border-radius:12px;padding:14px">
       <div style="font-size:20px;font-weight:900;color:var(--accent)">${w.code}</div>
-      <div style="font-size:11px;color:var(--text3);margin-bottom:6px">${w.name}</div>
-      <div class="wh-status">${rows.length
-        ?`<div style="font-size:12px;color:var(--green);font-weight:700;margin-bottom:8px">✅ ${rows.length} مادة جاهزة</div>`
-        :`<div style="font-size:12px;color:var(--text3);margin-bottom:8px">لم يُرفع ملف بعد</div>`
-      }</div>
-      <div class="wh-actions">${rows.length
-        ?`<label class="btn btn-o btn-sm" style="cursor:pointer;display:inline-block">🔄 تغيير
-            <input type="file" accept=".xlsx,.xls" style="display:none" data-code="${w.code}"></label>`
-        :`<label class="btn btn-p btn-sm" style="cursor:pointer;display:inline-flex;align-items:center;gap:6px">
-            📤 رفع Excel <input type="file" accept=".xlsx,.xls" style="display:none" data-code="${w.code}"></label>`
-      }</div>
+      <div style="font-size:11px;color:var(--text3);margin-bottom:8px">${w.name}</div>
+      ${rows.length?`<div style="font-size:12px;color:var(--green);margin-bottom:8px">${rows.length} مادة جاهزة</div>
+        <label class="btn btn-o btn-sm" style="cursor:pointer;display:inline-block">🔄 تغيير
+          <input type="file" accept=".xlsx,.xls" style="display:none" onchange="loadWhFile(event,'${w.code}')"></label>`:
+        `<label class="btn btn-p btn-sm" style="cursor:pointer;display:inline-flex;align-items:center;gap:6px">
+          📤 رفع Excel <input type="file" accept=".xlsx,.xls" style="display:none" onchange="loadWhFile(event,'${w.code}')"></label>`}
     </div>`;
   }).join('');
-
-  // Single event delegation on the grid — survives card re-renders
-  // Remove old listener if any, then add fresh one
-  grid._whHandler && grid.removeEventListener('change', grid._whHandler);
-  grid._whHandler = ev => {
-    if(ev.target.type !== 'file') return;
-    const code = ev.target.dataset.code;
-    if(code) W.loadWhFile(ev, code);
-  };
-  grid.addEventListener('change', grid._whHandler);
 }
 
 W.loadWhFile=(ev,code)=>{
   const file=ev.target.files[0];if(!file)return;
-  // Read the file data into an ArrayBuffer immediately before any async work
   const rd=new FileReader();
   rd.onload=e=>{
-    try{
-      const wb=XLSX.read(new Uint8Array(e.target.result),{type:'array'});
-      const raw=XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{header:1,defval:''});
-      let hi=0,mf=0;
-      for(let i=0;i<Math.min(10,raw.length);i++){const f=raw[i].filter(c=>String(c).trim()).length;if(f>mf){mf=f;hi=i;}}
-      const hdrs=raw[hi].map(c=>String(c).trim());
-      const ci=kws=>{for(const kw of kws){const i=hdrs.findIndex(h=>h.toLowerCase().includes(kw));if(i>=0)return i;}return -1;};
-      // يدعم تنسيق: البند، الرقم، الاسم، العدد، الأجزاء، السعر الوسطي، القيمة
-      const sc=ci(['البند','تسلسل','ت']),
-            nc=ci(['الرقم المخزني','رقم مخزني','الرقم','رقم','مخزني','كود']),
-            na=ci(['الاسم','اسم','مادة','بند']),
-            qc=ci(['العدد','عدد','كمية']),
-            ptc=ci(['الأجزاء','اجزاء','أجزاء']),
-            pc=ci(['السعر الوسطي','سعر وسطي','سعر','وسطي']);
-      const parsed=[];
-      raw.slice(hi+1).forEach(r=>{
-        const name=String(na>=0?r[na]:(r[2]||r[1]||'')).trim();
-        if(!name||name.toLowerCase().includes('إجمالي')||name.toLowerCase().includes('المجموع'))return;
-        const qty=parseFloat(String(qc>=0?r[qc]:r[3]).replace(/,/g,''))||0;
-        if(!qty)return;
-        let sn=String(nc>=0?r[nc]:(r[1]||'')).trim();
-        if(!sn){const lc=name.toLowerCase();const ch=CAT.find(c=>c.name.toLowerCase()===lc&&c.storeNum);if(ch)sn=ch.storeNum;}
-        const parts=parseFloat(String(ptc>=0?r[ptc]:'0').replace(/,/g,''))||0;
-        const price=parseFloat(String(pc>=0?r[pc]:r[5]).replace(/,/g,''))||0;
-        parsed.push({storeNum:sn,name,wh:code,qty,parts,price});
-      });
-      roData[code]=parsed;
-      // Update only this card's display — don't rebuild the whole grid (that resets other inputs)
-      updateWhCard(code);
-      toast(`✅ مخزن ${code}: ${parsed.length} مادة جاهزة`,'s');
-    }catch(ex){toast(`❌ خطأ في قراءة ملف مخزن ${code}: ${ex.message}`,'e');}
+    const wb=XLSX.read(new Uint8Array(e.target.result),{type:'array'});
+    const raw=XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{header:1,defval:''});
+    let hi=0,mf=0;
+    for(let i=0;i<Math.min(10,raw.length);i++){const f=raw[i].filter(c=>String(c).trim()).length;if(f>mf){mf=f;hi=i;}}
+    const hdrs=raw[hi].map(c=>String(c).trim());
+    const ci=kws=>{for(const kw of kws){const i=hdrs.findIndex(h=>h.toLowerCase().includes(kw));if(i>=0)return i;}return -1;};
+    const nc=ci(['رقم مخزني','رقم','مخزني','كود']),na=ci(['اسم','مادة','بند']),
+          qc=ci(['عدد','كمية']),pc=ci(['سعر','وسطي']);
+    const parsed=[];
+    raw.slice(hi+1).forEach(r=>{
+      const name=String(na>=0?r[na]:(r[2]||r[1]||'')).trim();
+      if(!name||name.includes('إجمالي'))return;
+      const qty=parseFloat(String(qc>=0?r[qc]:r[3]).replace(/,/g,''))||0;
+      if(!qty)return;
+      let sn=String(nc>=0?r[nc]:(r[1]||'')).trim();
+      if(!sn){const lc=name.toLowerCase();const ch=CAT.find(c=>c.name.toLowerCase()===lc&&c.storeNum);if(ch)sn=ch.storeNum;}
+      parsed.push({storeNum:sn,name,wh:code,qty,parts:0,price:parseFloat(String(pc>=0?r[pc]:r[5]).replace(/,/g,''))||0});
+    });
+    roData[code]=parsed; buildWhGrid(); toast(`✅ مخزن ${code}: ${parsed.length} مادة جاهزة`,'s');
   };
-  rd.readAsArrayBuffer(file);
-  // Clear input value AFTER starting the read, inside a timeout so FileReader isn't interrupted
-  setTimeout(()=>{ try{ev.target.value='';}catch(e){} },100);
+  rd.readAsArrayBuffer(file);ev.target.value='';
 };
-
-// Update a single warehouse card without rebuilding the whole grid
-function updateWhCard(code){
-  const rows=roData[code]||[];
-  const card=document.querySelector(`[data-wh-code="${code}"]`);
-  if(!card) return;
-  const status=card.querySelector('.wh-status');
-  const actions=card.querySelector('.wh-actions');
-  if(status) status.innerHTML=rows.length
-    ?`<div style="font-size:12px;color:var(--green);font-weight:700;margin-bottom:8px">✅ ${rows.length} مادة جاهزة</div>`
-    :`<div style="font-size:12px;color:var(--text3);margin-bottom:8px">لم يُرفع ملف بعد</div>`;
-  if(actions) actions.innerHTML=rows.length
-    ?`<label class="btn btn-o btn-sm" style="cursor:pointer;display:inline-block">🔄 تغيير
-        <input type="file" accept=".xlsx,.xls" style="display:none" data-code="${code}"></label>`
-    :`<label class="btn btn-p btn-sm" style="cursor:pointer;display:inline-flex;align-items:center;gap:6px">
-        📤 رفع Excel <input type="file" accept=".xlsx,.xls" style="display:none" data-code="${code}"></label>`;
-  card.style.borderColor=rows.length?'var(--green)':'var(--border)';
-}
 
 W.applyManualRo=()=>{
   const loaded=Object.keys(roData).filter(c=>(roData[c]||[]).length>0);
@@ -1308,12 +1257,6 @@ async function execRollover(byWH){
   };
 
   toast(`⏳ جارٍ حفظ ${total} مادة في Firebase...`, 'i');
-
-  // ── Firestore has a 500-operation limit per batch. We build batches that
-  //    contain: 1 receive-doc set + up to N catalogue set/update ops, and
-  //    split into multiple batches if a warehouse pushes past the limit.
-  const MAX_OPS = 450; // safety margin under Firestore's 500 cap
-  const rolloverFiles = []; // { code, name, rows } for Excel export after save
 
   for (const code of codes) {
     const rows = byWH[code]||[];
@@ -1344,61 +1287,37 @@ async function execRollover(byWH){
       createdBy: ME?.email||'system'
     };
 
-    // ── Pre-compute catalogue diffs for this warehouse (no network calls yet) ──
-    const catOps = []; // { kind:'new'|'fillSn', ref?, data?, exObj?, storeNum? }
-    const seenNames = new Set();
-    for (const it of items) {
-      const lc = it.name.toLowerCase();
-      if (seenNames.has(lc)) continue; // avoid duplicate catalogue ops within same upload
-      seenNames.add(lc);
-      const ex = CAT.find(c => c.name.toLowerCase() === lc);
-      if (!ex) {
-        catOps.push({ kind:'new', name: it.name, storeNum: it.storeNum||'', unit: it.unit||'' });
-      } else if (!ex.storeNum && it.storeNum) {
-        catOps.push({ kind:'fillSn', exObj: ex, storeNum: it.storeNum });
-      }
-    }
-
-    // ── Build + commit batch(es): 1 receive doc + catalogue ops, chunked under MAX_OPS ──
-    let recRef = doc(collection(db, C.rec)); // pre-generate ref so we can push to REC immediately
-    let batch = writeBatch(db);
-    let opsInBatch = 0;
-    batch.set(recRef, docData);
-    opsInBatch++;
-
-    const commitsPending = [];
-    for (const op of catOps) {
-      if (opsInBatch >= MAX_OPS) {
-        commitsPending.push(batch.commit());
-        batch = writeBatch(db);
-        opsInBatch = 0;
-      }
-      if (op.kind === 'new') {
-        const ref2 = doc(collection(db, C.cat));
-        batch.set(ref2, {
-          storeNum: op.storeNum, name: op.name, warehouse: code,
-          unit: op.unit, minQty: 0, source: 'تدوير', createdAt: serverTimestamp()
-        });
-        CAT.push({ id: ref2.id, storeNum: op.storeNum, name: op.name,
-          warehouse: code, unit: op.unit, minQty: 0, source: 'تدوير' });
-        catAdded++;
-      } else if (op.kind === 'fillSn') {
-        batch.update(doc(db, C.cat, op.exObj.id), { storeNum: op.storeNum });
-        op.exObj.storeNum = op.storeNum;
-      }
-      opsInBatch++;
-    }
-    commitsPending.push(batch.commit());
-
     try {
-      await Promise.all(commitsPending);
-      REC.unshift({ id: recRef.id, ...docData });
-      rolloverFiles.push({ code, name: WH_NAMES[code]||code, rows });
-      toast(`✅ مخزن ${code}: تم حفظ ${rows.length} مادة`, 's');
-      console.log(`✅ Rollover saved: ${code} — ${rows.length} items — doc:${recRef.id}`);
+      const ref = await addDoc(collection(db, C.rec), docData);
+      REC.unshift({ id:ref.id, ...docData });
+      console.log(`✅ Rollover saved: ${code} — ${rows.length} items — doc:${ref.id}`);
     } catch(ex) {
       console.error(`❌ Rollover failed for ${code}:`, ex);
       toast(`❌ فشل حفظ مخزن ${code}: ${ex.message}`, 'e');
+    }
+
+    // مزامنة الكتالوج
+    for (const it of items) {
+      const ex = CAT.find(c=>c.name.toLowerCase()===it.name.toLowerCase());
+      if (!ex) {
+        try {
+          const ref2 = await addDoc(collection(db, C.cat), {
+            storeNum: it.storeNum||'', name:it.name, warehouse:code,
+            unit:it.unit||'', minQty:0, source:'تدوير', createdAt:serverTimestamp()
+          });
+          CAT.push({ id:ref2.id, storeNum:it.storeNum||'', name:it.name,
+            warehouse:code, unit:it.unit||'', minQty:0, source:'تدوير' });
+          catAdded++;
+        } catch(e) { console.warn('cat sync failed:', e); }
+      } else {
+        // أكمل الرقم المخزني إذا كان فارغاً
+        if (!ex.storeNum && it.storeNum) {
+          try {
+            await updateDoc(doc(db, C.cat, ex.id), { storeNum:it.storeNum });
+            ex.storeNum = it.storeNum;
+          } catch(e) {}
+        }
+      }
     }
   }
 
@@ -1418,14 +1337,9 @@ async function execRollover(byWH){
         <div class="stat"><div class="stat-lbl">الحالة</div><div class="stat-val" style="font-size:14px">✅ محفوظ</div></div>
       </div>
       <div style="margin-top:10px;font-size:11px;color:var(--text2)">
-        💡 البيانات محفوظة في Firebase وتظهر الآن في: كاتلوج المواد • جرد المستودع • الأرصدة المتبقية • كشف اليومية
-      </div>
-      <div style="margin-top:12px;display:flex;flex-wrap:wrap;gap:8px">
-        ${rolloverFiles.map(f=>`<button class="btn btn-o btn-sm" onclick="downloadRoExcel('${f.code}')">📥 تنزيل Excel — مخزن ${f.code}</button>`).join('')}
-        ${rolloverFiles.length>1?`<button class="btn btn-s btn-sm" onclick="downloadRoExcelAll()">📦 تنزيل الكل (ملف موحّد)</button>`:''}
+        💡 البيانات محفوظة في Firebase وتظهر الآن في: كشف المخزون • جرد المستودع • كشف اليومية • الأرصدة المتبقية
       </div>
     </div>`;
-  W._lastRolloverFiles = rolloverFiles; // store for download functions
 
   // تبويبات المخازن
   document.getElementById('ro-tabs').innerHTML = codes.map((c,i)=>
@@ -1447,13 +1361,12 @@ async function execRollover(byWH){
         <span style="color:var(--gold)">القيمة: ${N(tv)} د.ع</span>
       </div>
       <div class="tw" style="max-height:320px;overflow-y:auto"><table>
-        <thead><tr><th>البند</th><th>الرقم</th><th>الاسم</th><th>العدد</th><th>الأجزاء</th><th>السعر الوسطي</th><th>القيمة</th><th>الحالة</th></tr></thead>
+        <thead><tr><th>تسلسل</th><th>الرقم المخزني</th><th>اسم المادة</th><th>الكمية</th><th>السعر الوسطي</th><th>القيمة</th><th>الحالة</th></tr></thead>
         <tbody>${rows.map((r,j)=>`<tr>
           <td style="color:var(--text3)">${j+1}</td>
           <td><span class="doc-num">${r.storeNum||'—'}</span></td>
           <td style="font-weight:600">${r.name}</td>
           <td style="text-align:center">${N(r.qty)}</td>
-          <td style="text-align:center">${N(r.parts||0)}</td>
           <td style="text-align:center">${N(r.price)}</td>
           <td class="pc">${N(r.qty*(r.price||0))}</td>
           <td><span style="color:var(--green);font-size:11px">✅ محفوظ في Firebase</span></td>
@@ -1464,58 +1377,40 @@ async function execRollover(byWH){
 
   document.getElementById('ro-result').classList.remove('hidden');
   document.getElementById('ro-result').scrollIntoView({behavior:'smooth'});
-  CAT.sort((a,b)=>a.name.localeCompare(b.name,'ar'));
-  W.renderCat && W.renderCat();
-  W.runInv && W.runInv();
-  W.runBal && W.runBal();
   updateDash(); renderRec();
   st('b-rec', REC.length);
   toast(`✅ تم تدوير وحفظ ${total} مادة في ${codes.length} مخازن`, 's');
 }
 
-// ── تصدير ملفات Excel لتدوير الأرصدة بصيغة: البند، الرقم، الاسم، العدد، الأجزاء، السعر الوسطي، القيمة ──
-function buildRoSheet(wb, code, name, rows) {
-  const data = [
-    ['البند','الرقم','الاسم','العدد','الأجزاء','السعر الوسطي','القيمة']
-  ];
-  rows.forEach((r,i)=>{
-    data.push([
-      i+1,
-      r.storeNum||'',
-      r.name,
-      r.qty,
-      r.parts||0,
-      r.price||0,
-      r.qty*(r.price||0)
-    ]);
-  });
-  const totalVal = rows.reduce((s,r)=>s+r.qty*(r.price||0),0);
-  data.push(['', '', 'الإجمالي', '', '', '', totalVal]);
+  // tabs per warehouse
+  document.getElementById('ro-tabs').innerHTML=codes.map((c,i)=>
+    `<button id="ro-t-${c}" onclick="showRoTab('${c}')"
+      style="padding:6px 14px;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;
+      border:1px solid ${i===0?'var(--accent)':'var(--border)'};
+      background:${i===0?'rgba(59,130,246,.1)':'transparent'};
+      color:${i===0?'var(--accent)':'var(--text2)'}">${c} (${(byWH[c]||[]).length})</button>`).join('');
 
-  const ws = XLSX.utils.aoa_to_sheet(data);
-  ws['!cols'] = [{wch:8},{wch:16},{wch:34},{wch:10},{wch:10},{wch:16},{wch:18}];
-  ws['!rtl'] = true;
-  XLSX.utils.book_append_sheet(wb, ws, `${code}`);
+  document.getElementById('ro-tab-content').innerHTML=codes.map((c,i)=>{
+    const rows=byWH[c]||[];
+    const tv=rows.reduce((s,r)=>s+r.qty*(r.price||0),0);
+    return `<div id="ro-tc-${c}" ${i>0?'class="hidden"':''}>
+      <div style="font-size:12px;color:var(--text3);margin-bottom:8px">
+        مخزن <b>${c}</b> — <span style="color:var(--accent)">${rows.length} مادة</span> —
+        <span style="color:var(--gold)">القيمة: ${N(tv)} د.ع</span></div>
+      <div class="tw" style="max-height:300px;overflow-y:auto"><table>
+        <thead><tr><th>#</th><th>الرقم المخزني</th><th>اسم المادة</th><th>الكمية</th><th>السعر</th><th>القيمة</th><th>الحالة</th></tr></thead>
+        <tbody>${rows.map((r,j)=>`<tr><td>${j+1}</td><td><span class="doc-num">${r.storeNum||'—'}</span></td>
+          <td style="font-weight:600">${r.name}</td><td>${N(r.qty)}</td><td>${N(r.price)}</td>
+          <td class="pc">${N(r.qty*(r.price||0))}</td>
+          <td><span style="color:var(--green);font-size:11px">✅ محفوظ</span></td></tr>`).join('')}</tbody>
+      </table></div></div>`;
+  }).join('');
+
+  document.getElementById('ro-result').classList.remove('hidden');
+  document.getElementById('ro-result').scrollIntoView({behavior:'smooth'});
+  updateDash(); renderRec();
+  toast(`✅ تم تدوير ${total} مادة في ${codes.length} مخازن وحفظها في Firebase`,'s');
 }
-
-W.downloadRoExcel = code => {
-  const files = W._lastRolloverFiles||[];
-  const f = files.find(x=>x.code===code);
-  if(!f){ toast('تعذر إيجاد بيانات هذا المخزن','e'); return; }
-  const wb = XLSX.utils.book_new();
-  buildRoSheet(wb, f.code, f.name, f.rows);
-  XLSX.writeFile(wb, `تدوير_مخزن_${f.code}_${f.name.replace(/\s+/g,'_')}.xlsx`);
-  toast(`📥 تم تنزيل ملف مخزن ${code}`, 's');
-};
-
-W.downloadRoExcelAll = () => {
-  const files = W._lastRolloverFiles||[];
-  if(!files.length){ toast('لا توجد بيانات للتصدير','e'); return; }
-  const wb = XLSX.utils.book_new();
-  files.forEach(f=>buildRoSheet(wb, f.code, f.name, f.rows));
-  XLSX.writeFile(wb, `تدوير_جميع_المخازن_${new Date().toISOString().split('T')[0]}.xlsx`);
-  toast('📦 تم تنزيل الملف الموحّد', 's');
-};
 
 W.showRoTab=code=>{
   document.querySelectorAll('[id^="ro-tc-"]').forEach(el=>el.classList.add('hidden'));
@@ -1674,57 +1569,49 @@ function toast(msg,type='i'){
   setTimeout(()=>{t.classList.remove('show');setTimeout(()=>t.remove(),300);},3500);
 }
 
+// ── التحقق من صحة الإعداد عند التحميل ──
+if (FC.apiKey.includes('PASTE') || !FC.projectId) {
+  document.getElementById('l-err').textContent =
+    '⚠ لم يتم إعداد Firebase — ضع بيانات مشروعك في أعلى الكود';
+} else {
+  // اختبار الاتصال بـ Firestore
+  getDocs(query(collection(db, C.cat), orderBy('name','asc'))).then(() => {
+    console.log('✅ Firebase connection OK');
+  }).catch(ex => {
+    console.error('Firebase error:', ex);
+    const msg = ex.code === 'permission-denied'
+      ? '⚠ Firestore Rules تمنع الوصول — غيّر Rules إلى test mode'
+      : ex.code === 'unavailable'
+      ? '⚠ لا اتصال بـ Firebase — تحقق من الإنترنت'
+      : `⚠ Firebase: ${ex.code}`;
+    document.getElementById('l-err').textContent = msg;
+  });
+}
+  const today = new Date().toISOString().split('T')[0];
+  ['r_date','i_date'].forEach(id => { const el=document.getElementById(id); if(el) el.value=today; });
+  W.addRow('r');
+  W.addRow('i');
+}, 200);
+</script>
 
-
-// ═══════════════════════════════════════════════════════════
-//  🌓 THEME TOGGLE
-// ═══════════════════════════════════════════════════════════
-W.toggleTheme = () => {
-  const isLight = document.documentElement.classList.toggle('light');
-  localStorage.setItem('wh-theme', isLight ? 'light' : 'dark');
-  const knob = document.getElementById('theme-knob');
-  const btn  = document.getElementById('theme-toggle');
-  if(isLight){
-    if(knob){ knob.style.transform='translateX(-20px)'; knob.textContent='☀️'; }
-    if(btn)  btn.style.background='#e0ecff';
-  } else {
-    if(knob){ knob.style.transform='translateX(0)'; knob.textContent='🌙'; }
-    if(btn)  btn.style.background='';
-  }
-};
-
-// Apply saved theme on load
-(()=>{
-  const saved = localStorage.getItem('wh-theme');
-  if(saved === 'light'){
-    document.documentElement.classList.add('light');
-    // Defer DOM update until elements exist
-    document.addEventListener('DOMContentLoaded', ()=>{
-      const knob = document.getElementById('theme-knob');
-      const btn  = document.getElementById('theme-toggle');
-      if(knob){ knob.style.transform='translateX(-20px)'; knob.textContent='☀️'; }
-      if(btn)  btn.style.background='#e0ecff';
+<!-- Bridge: يربط دوال الـ module بـ window حتى تعمل onclick في HTML -->
+<script>
+// هذه الدوال تُعرَّف على window من داخل الـ module (W = window)
+// لكن Chrome يحتاج تأكيداً أن الـ module محمّل قبل أي نقرة
+document.addEventListener('DOMContentLoaded', () => {
+  // تعيين تاريخ اليوم
+  const today = new Date().toISOString().split('T')[0];
+  const setDate = id => { const el=document.getElementById(id); if(el) el.value=today; };
+  setTimeout(() => {
+    setDate('r_date'); setDate('i_date');
+    // Enter في كلمة المرور
+    document.getElementById('l-pass')?.addEventListener('keydown', e => {
+      if (e.key==='Enter') window.doLogin?.();
     });
-  }
-})();
-
-// Init
-document.addEventListener('DOMContentLoaded',()=>{
-  const today=new Date().toISOString().split('T')[0];
-  ['r_date','i_date'].forEach(id=>{const el=document.getElementById(id);if(el)el.value=today;});
-  ['r','i'].forEach(p=>W.addRow(p));
-  document.getElementById('l-pass')?.addEventListener('keydown',e=>{if(e.key==='Enter')W.doLogin();});
+  }, 100);
 });
 </script>
 
-<!-- SheetJS for Excel -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-<style>
-/* Fix toast classes */
-.ts,.te,.ti{border-width:1px;border-style:solid}
-.ts{border-color:var(--green);color:var(--green)}
-.te{border-color:var(--red);color:var(--red)}
-.ti{border-color:var(--accent);color:var(--accent)}
-</style>
 </body>
 </html>
